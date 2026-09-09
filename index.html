@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <meta
+        name="description"
+        content="The Sandbox - Official Series Website"
+    >
+
+    <title>The Sandbox</title>
+
+    <link
+        rel="stylesheet"
+        href="style.css"
+    >
+
+</head>
+
+
+<body>
+
+
+    <!-- =========================================
+         BOOT SCREEN
+    ========================================== -->
+
+    <div id="boot-screen">
+
+        <div class="boot-content">
+
+            <p id="boot-text">
+                CONNECTING TO SANDBOX...
+            </p>
+
+        </div>
+
+    </div>
+
+
+
+    <!-- =========================================
+         HEADER
+    ========================================== -->
+
+    <header>
+
+        <div class="logo">
+            THE SANDBOX
+        </div>
+
+
+        <nav>
+
+            <button onclick="scrollToSection('home')">
+                HOME
+            </button>
+
+            <button onclick="scrollToSection('episodes')">
+                EPISODES
+            </button>
+
+            <button onclick="scrollToSection('characters')">
+                CHARACTERS
+            </button>
+
+            <button onclick="scrollToSection('support')">
+                SUPPORT
+            </button>
+
+            <button onclick="scrollToSection('archive')">
+                ARCHIVE
+            </button>
+
+        </nav>
+
+    </header>
+
+
+
+    <!-- =========================================
+         HERO
+    ========================================== -->
+
+    <section
+        id="home"
+        class="hero"
+    >
+
+        <div class="scanlines"></div>
+
+
+        <div class="hero-content">
+
+            <div class="system-status">
+                ● SYSTEM ONLINE
+            </div>
+
+
+            <h1
+                class="glitch"
+                data-text="THE SANDBOX"
+            >
+                THE SANDBOX
+            </h1>
+
+
+            <p id="tagline">
+                YOU WERE NEVER SUPPOSED TO FIND THIS PLACE.
+            </p>
+
+
+            <button
+                class="main-button"
+                onclick="scrollToSection('episodes')"
+            >
+                ENTER
+            </button>
+
+        </div>
+
+    </section>
+
+
+
+    <!-- =========================================
+         EPISODES
+    ========================================== -->
+
+    <section
+        id="episodes"
+        class="content-section"
+    >
+
+        <div class="section-title">
+
+            <span>
+                /ARCHIVE/EPISODES
+            </span>
+
+            <h2>
+                EPISODES
+            </h2>
+
+        </div>
+
+
+        <div
+            id="episode-container"
+            class="card-grid"
+        ></div>
+
+
+
+        <!-- TRAILERS -->
+
+        <div class="trailer-section">
+
+            <div class="section-title">
+
+                <span>
+                    /ARCHIVE/TRAILERS
+                </span>
+
+                <h2>
+                    EPISODE TRAILERS
+                </h2>
+
+            </div>
+
+
+            <div
+                id="trailer-container"
+                class="card-grid"
+            ></div>
+
+        </div>
+
+    </section>
+
+
+
+    <!-- =========================================
+         CHARACTERS
+    ========================================== -->
+
+    <section
+        id="characters"
+        class="content-section"
+    >
+
+        <div class="section-title">
+
+            <span>
+                /SYSTEM/SUBJECTS
+            </span>
+
+            <h2>
+                SUBJECT FILES
+            </h2>
+
+        </div>
+
+
+        <div
+            id="character-container"
+            class="card-grid"
+        ></div>
+
+    </section>
+
+
+
+    <!-- =========================================
+         DONATION / SUPPORT
+    ========================================== -->
+
+    <section
+        id="support"
+        class="support-section"
+    >
+
+        <div class="support-box">
+
+
+            <div class="support-code">
+                /PROJECT/SUPPORT
+            </div>
+
+
+            <h2>
+                KEEP THE SANDBOX ALIVE
+            </h2>
+
+
+            <p>
+                The Sandbox is an independent animated series.
+                Support helps with animation, production,
+                music, rendering, and future episodes.
+            </p>
+
+
+            <div class="support-status">
+
+                <span>
+                    PROJECT STATUS
+                </span>
+
+                <strong>
+                    ACTIVE
+                </strong>
+
+            </div>
+
+
+            <button
+                class="donate-button"
+                onclick="openDonationPage()"
+            >
+                SUPPORT THE SERIES
+            </button>
+
+
+            <div class="support-small">
+                Donations are optional and help support future production.
+            </div>
+
+        </div>
+
+    </section>
+
+
+
+    <!-- =========================================
+         ARCHIVE
+    ========================================== -->
+
+    <section
+        id="archive"
+        class="content-section"
+    >
+
+        <div class="section-title">
+
+            <span>
+                /SYSTEM/ARCHIVE
+            </span>
+
+            <h2>
+                ARCHIVE
+            </h2>
+
+        </div>
+
+
+        <div class="terminal">
+
+            <p>
+                SANDBOX SYSTEM ARCHIVE
+            </p>
+
+            <p>
+                -----------------------------------
+            </p>
+
+            <p>
+                SERVER CONNECTION........ONLINE
+            </p>
+
+            <p>
+                SUBJECT DATABASE.........ONLINE
+            </p>
+
+            <p>
+                MEMORY DATABASE...........DAMAGED
+            </p>
+
+            <p>
+                FRAME CORE................UNKNOWN
+            </p>
+
+            <p>
+                UNKNOWN PROCESS...........DETECTED
+            </p>
+
+            <br>
+
+
+            <p>
+                SOME FILES HAVE BEEN REMOVED.
+            </p>
+
+            <p>
+                SOME FILES WERE NEVER SUPPOSED TO EXIST.
+            </p>
+
+            <br>
+
+
+            <p class="warning">
+                WARNING: RESTRICTED DATA DETECTED
+            </p>
+
+        </div>
+
+    </section>
+
+
+
+    <!-- =========================================
+         FOOTER
+    ========================================== -->
+
+    <footer>
+
+        <div>
+            THE SANDBOX
+        </div>
+
+        <span>
+            CONNECTION ACTIVE
+        </span>
+
+    </footer>
+
+
+
+    <!-- =========================================
+         VIDEO PLAYER
+    ========================================== -->
+
+    <div
+        id="video-player"
+        class="video-player hidden"
+    >
+
+        <div class="video-window">
+
+
+            <div class="video-header">
+
+                <span id="video-title">
+                    SANDBOX MEDIA FILE
+                </span>
+
+
+                <button onclick="closeVideoPlayer()">
+                    CLOSE
+                </button>
+
+            </div>
+
+
+            <video
+                id="main-video"
+                controls
+                playsinline
+            ></video>
+
+        </div>
+
+    </div>
+
+
+
+    <!--
+        IMPORTANT:
+
+        content.js MUST LOAD BEFORE script.js
+    -->
+
+    <script src="content.js"></script>
+
+    <script src="script.js"></script>
+
+
+</body>
+
+</html>
