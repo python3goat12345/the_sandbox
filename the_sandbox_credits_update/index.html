@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>The Sandbox</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <div id="boot-screen">
+    <pre id="boot-text"></pre>
+  </div>
+
+  <header class="topbar">
+    <a class="logo" href="#home">THE SANDBOX</a>
+
+    <nav>
+      <a href="#home">HOME</a>
+      <a href="#episodes">EPISODES</a>
+      <a href="#characters">CHARACTERS</a>
+      <a href="#fabrication">FABRICATION</a>
+      <a href="#support">SUPPORT</a>
+      <a href="#archive">ARCHIVE</a>
+    </nav>
+
+    <div id="credit-display" class="credit-display" title="Sandbox Credits">
+      ◈ <span id="credit-balance">0</span> SC
+    </div>
+  </header>
+
+  <main>
+    <section id="home" class="hero">
+      <div class="scanlines"></div>
+      <div class="hero-content">
+        <div class="system-tag">SANDBOX NETWORK // CONNECTION ACTIVE</div>
+        <h1 id="site-title" class="glitch" data-text="THE SANDBOX">THE SANDBOX</h1>
+        <p id="site-tagline">YOU WERE NEVER SUPPOSED TO FIND THIS PLACE.</p>
+        <a href="#episodes" class="primary-button">ENTER SYSTEM</a>
+      </div>
+    </section>
+
+    <section id="episodes" class="section">
+      <div class="section-heading">
+        <span>MEDIA ARCHIVE</span>
+        <h2>EPISODES</h2>
+      </div>
+      <div id="episode-container" class="card-grid"></div>
+
+      <div class="subsection-heading">
+        <span>REWARD: +10 SC FIRST VIEW</span>
+        <h3>TRAILERS</h3>
+      </div>
+      <div id="trailer-container" class="card-grid"></div>
+    </section>
+
+    <section id="characters" class="section alt">
+      <div class="section-heading">
+        <span>SUBJECT DATABASE</span>
+        <h2>CHARACTERS</h2>
+      </div>
+      <div id="character-container" class="card-grid"></div>
+    </section>
+
+    <section id="fabrication" class="section">
+      <div class="section-heading">
+        <span>OBJECT RECONSTRUCTION SYSTEM</span>
+        <h2>FABRICATION</h2>
+      </div>
+
+      <div class="fabrication-intro panel">
+        <p>
+          Use Sandbox Credits to unlock downloadable 3D reconstruction files.
+          Credits are fictional website points only — no real money involved.
+        </p>
+        <p class="muted">
+          Once a model is unlocked on this browser, it stays unlocked.
+        </p>
+      </div>
+
+      <div id="model-container" class="card-grid"></div>
+    </section>
+
+    <section id="support" class="section alt">
+      <div class="section-heading">
+        <span>PROJECT SUPPORT NODE</span>
+        <h2>SUPPORT THE SANDBOX</h2>
+      </div>
+
+      <div class="panel support-panel">
+        <p>
+          Help support future episodes, animation, assets, and production.
+        </p>
+        <button id="donate-button" class="primary-button button-reset">
+          OPEN SUPPORT LINK
+        </button>
+      </div>
+    </section>
+
+    <section id="archive" class="section archive-section">
+      <div class="section-heading">
+        <span>RESTRICTED SYSTEM</span>
+        <h2>ARCHIVE TERMINAL</h2>
+      </div>
+
+      <div class="terminal">
+        <div id="terminal-output" class="terminal-output">
+          SANDBOX ARCHIVE TERMINAL v1.4<br>
+          Type <strong>help</strong> and press Enter.<br>
+        </div>
+
+        <div class="terminal-input-row">
+          <span>&gt;</span>
+          <input
+            id="terminal-input"
+            type="text"
+            autocomplete="off"
+            spellcheck="false"
+            aria-label="Archive terminal command"
+          >
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <span>THE SANDBOX // SYSTEM ONLINE</span>
+    <span id="footer-status">CONNECTION STABLE</span>
+  </footer>
+
+  <div id="video-player" class="modal hidden">
+    <div class="modal-box">
+      <button id="close-video" class="close-button" aria-label="Close video">×</button>
+      <h3 id="video-title">MEDIA FILE</h3>
+
+      <video id="main-video" controls playsinline></video>
+
+      <iframe
+        id="youtube-player"
+        class="hidden"
+        title="YouTube video player"
+        allow="autoplay; encrypted-media; picture-in-picture"
+        allowfullscreen>
+      </iframe>
+    </div>
+  </div>
+
+  <div id="toast" class="toast hidden"></div>
+
+  <script src="content.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>
