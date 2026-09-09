@@ -1,1090 +1,2033 @@
-console.log(
-    "THE SANDBOX SYSTEM STARTING..."
-);
+(() => {
+
+  "use strict";
 
 
+  // ==========================================
+  // STORAGE
+  // ==========================================
 
-/* =========================================
-   ELEMENTS
-========================================= */
+  const STORAGE = {
 
-const episodeContainer =
-    document.getElementById(
-        "episode-container"
-    );
+    credits:
+      "sandbox_credits_v1",
 
+    trailerRewards:
+      "sandbox_trailer_rewards_v1",
 
-const trailerContainer =
-    document.getElementById(
-        "trailer-container"
-    );
+    unlockedModels:
+      "sandbox_unlocked_models_v1",
 
+    easterEggs:
+      "sandbox_easter_eggs_v1"
 
-const characterContainer =
-    document.getElementById(
-        "character-container"
-    );
+  };
 
 
-const bootScreen =
-    document.getElementById(
-        "boot-screen"
-    );
+  const $ = (selector) =>
+    document.querySelector(selector);
 
 
-const bootText =
-    document.getElementById(
-        "boot-text"
-    );
+  const state = {
+
+    credits: 0,
+
+    trailerRewards: {},
+
+    unlockedModels: {},
+
+    easterEggs: {}
+
+  };
 
 
-const tagline =
-    document.getElementById(
-        "tagline"
-    );
+  // ==========================================
+  // SAVE / LOAD
+  // ==========================================
 
+  function loadJSON(key, fallback) {
 
-const videoPlayer =
-    document.getElementById(
-        "video-player"
-    );
+    try {
 
+      const raw =
+        localStorage.getItem(key);
 
-const mainVideo =
-    document.getElementById(
-        "main-video"
-    );
-
-
-const videoTitle =
-    document.getElementById(
-        "video-title"
-    );
-
-
-
-/* =========================================
-   WEBSITE SETTINGS
-========================================= */
-
-if (
-    typeof SANDBOX_DATA !== "undefined" &&
-    SANDBOX_DATA.site
-) {
-
-    document.title =
-        SANDBOX_DATA.site.title;
-
-
-    if (tagline) {
-
-        tagline.textContent =
-            SANDBOX_DATA.site.tagline;
+      return raw
+        ? JSON.parse(raw)
+        : fallback;
 
     }
 
-}
+    catch {
 
+      return fallback;
 
-
-/* =========================================
-   BUILD EPISODES
-========================================= */
-
-function buildEpisodes() {
-
-
-    if (!episodeContainer) {
-        return;
     }
 
+  }
 
-    episodeContainer.innerHTML =
-        "";
 
+  function saveJSON(key, value) {
 
-    SANDBOX_DATA.episodes.forEach(
-
-        episode => {
-
-
-            const card =
-                document.createElement(
-                    "div"
-                );
-
-
-            card.className =
-                "card episode-card";
-
-
-            if (!episode.released) {
-
-                card.classList.add(
-                    "locked"
-                );
-
-            }
-
-
-            const number =
-                String(
-                    episode.number
-                ).padStart(
-                    2,
-                    "0"
-                );
-
-
-            card.innerHTML = `
-
-
-                <div class="image-container">
-
-
-                    <img
-
-                        src="${episode.thumbnail}"
-
-                        alt="${episode.title}"
-
-                        onerror="
-                            this.style.display='none'
-                        "
-
-                    >
-
-
-                    ${
-                        !episode.released
-
-                        ?
-
-                        `
-
-                        <div class="lock-screen">
-
-                            FILE LOCKED
-
-                        </div>
-
-                        `
-
-                        :
-
-                        ""
-                    }
-
-
-                </div>
-
-
-
-                <div class="card-content">
-
-
-                    <div class="card-number">
-
-                        FILE // EP-${number}
-
-                    </div>
-
-
-                    <h3>
-
-                        ${episode.title}
-
-                    </h3>
-
-
-                    <p>
-
-                        ${
-                            episode.released
-
-                            ?
-
-                            episode.description
-
-                            :
-
-                            "[ DATA CLASSIFIED ]"
-                        }
-
-                    </p>
-
-
-                    ${
-                        episode.released
-
-                        ?
-
-                        `
-
-                        <button
-
-                            class="watch-button"
-
-                            onclick="
-                                watchEpisode(
-                                    ${episode.number}
-                                )
-                            "
-
-                        >
-
-                            WATCH EPISODE
-
-                        </button>
-
-                        `
-
-                        :
-
-                        ""
-                    }
-
-
-                </div>
-
-            `;
-
-
-            episodeContainer.appendChild(
-                card
-            );
-
-        }
-
+    localStorage.setItem(
+      key,
+      JSON.stringify(value)
     );
 
-}
+  }
 
 
+  function loadState() {
 
-/* =========================================
-   BUILD TRAILERS
-========================================= */
+    const savedCredits =
+      localStorage.getItem(
+        STORAGE.credits
+      );
 
-function buildTrailers() {
 
+    if (savedCredits === null) {
 
-    if (!trailerContainer) {
-        return;
-    }
-
-
-    trailerContainer.innerHTML =
-        "";
-
-
-    SANDBOX_DATA.episodes.forEach(
-
-        episode => {
-
-
-            const released =
-
-                episode.trailerReleased
-                === true;
-
-
-            const card =
-
-                document.createElement(
-                    "div"
-                );
-
-
-            card.className =
-                "card trailer-card";
-
-
-            if (!released) {
-
-                card.classList.add(
-                    "locked"
-                );
-
-            }
-
-
-            const thumbnail =
-
-                episode.trailerThumbnail
-
-                ||
-
-                episode.thumbnail;
-
-
-            const number =
-
-                String(
-                    episode.number
-                ).padStart(
-                    2,
-                    "0"
-                );
-
-
-            card.innerHTML = `
-
-
-                <div class="image-container">
-
-
-                    <img
-
-                        src="${thumbnail}"
-
-                        alt="${episode.title} Trailer"
-
-                        onerror="
-                            this.style.display='none'
-                        "
-
-                    >
-
-
-                    ${
-                        !released
-
-                        ?
-
-                        `
-
-                        <div class="lock-screen">
-
-                            TRAILER LOCKED
-
-                        </div>
-
-                        `
-
-                        :
-
-                        ""
-                    }
-
-
-                </div>
-
-
-
-                <div class="card-content">
-
-
-                    <div class="card-number">
-
-                        TRAILER FILE //
-                        EP-${number}
-
-                    </div>
-
-
-                    <h3>
-
-                        ${episode.title}
-                        Trailer
-
-                    </h3>
-
-
-                    <p>
-
-                        ${
-                            released
-
-                            ?
-
-                            "Recovered promotional footage."
-
-                            :
-
-                            "[ FILE NOT YET AVAILABLE ]"
-                        }
-
-                    </p>
-
-
-                    ${
-                        released
-
-                        ?
-
-                        `
-
-                        <button
-
-                            class="watch-button"
-
-                            onclick="
-                                watchTrailer(
-                                    ${episode.number}
-                                )
-                            "
-
-                        >
-
-                            WATCH TRAILER
-
-                        </button>
-
-                        `
-
-                        :
-
-                        ""
-                    }
-
-
-                </div>
-
-            `;
-
-
-            trailerContainer.appendChild(
-                card
-            );
-
-        }
-
-    );
-
-}
-
-
-
-/* =========================================
-   BUILD CHARACTERS
-========================================= */
-
-function buildCharacters() {
-
-
-    if (!characterContainer) {
-        return;
-    }
-
-
-    characterContainer.innerHTML =
-        "";
-
-
-    SANDBOX_DATA.characters.forEach(
-
-        character => {
-
-
-            const card =
-
-                document.createElement(
-                    "div"
-                );
-
-
-            card.className =
-                "card character-card";
-
-
-            if (
-                character.classified
-            ) {
-
-                card.classList.add(
-                    "classified"
-                );
-
-            }
-
-
-            card.innerHTML = `
-
-
-                <div class="image-container">
-
-
-                    <img
-
-                        src="${character.image}"
-
-                        alt="${character.name}"
-
-                        onerror="
-                            this.style.display='none'
-                        "
-
-                    >
-
-
-                </div>
-
-
-
-                <div class="card-content">
-
-
-                    <div class="card-number">
-
-                        SUBJECT FILE
-
-                    </div>
-
-
-                    <h3>
-
-                        ${character.name}
-
-                    </h3>
-
-
-                    <p>
-
-                        ${character.description}
-
-                    </p>
-
-
-                </div>
-
-            `;
-
-
-            characterContainer.appendChild(
-                card
-            );
-
-        }
-
-    );
-
-}
-
-
-
-/* =========================================
-   WATCH EPISODE
-========================================= */
-
-function watchEpisode(
-    number
-) {
-
-
-    const episode =
-
-        SANDBOX_DATA.episodes.find(
-
-            item =>
-                item.number === number
-
+      state.credits =
+        Number(
+          SANDBOX_DATA.site.startingCredits || 0
         );
 
-
-    if (!episode) {
-
-        return;
-
-    }
-
-
-    if (!episode.released) {
-
-        alert(
-            "ACCESS DENIED: FILE LOCKED"
-        );
-
-        return;
-
-    }
-
-
-    if (!episode.video) {
-
-        alert(
-            "EPISODE VIDEO HAS NOT BEEN UPLOADED YET."
-        );
-
-        return;
-
-    }
-
-
-    openVideoPlayer(
-
-        episode.video,
-
-        `EPISODE ${episode.number} // ${episode.title}`
-
-    );
-
-}
-
-
-
-/* =========================================
-   WATCH TRAILER
-========================================= */
-
-function watchTrailer(
-    number
-) {
-
-
-    const episode =
-
-        SANDBOX_DATA.episodes.find(
-
-            item =>
-                item.number === number
-
-        );
-
-
-    if (!episode) {
-
-        return;
-
-    }
-
-
-    if (
-        episode.trailerReleased
-        !== true
-    ) {
-
-        alert(
-            "ACCESS DENIED: TRAILER LOCKED"
-        );
-
-        return;
-
-    }
-
-
-    if (!episode.trailer) {
-
-        alert(
-            "TRAILER LINK HAS NOT BEEN ADDED YET."
-        );
-
-        return;
-
-    }
-
-
-    /*
-        TRAILERS OPEN YOUTUBE
-    */
-
-    window.open(
-
-        episode.trailer,
-
-        "_blank",
-
-        "noopener,noreferrer"
-
-    );
-
-}
-
-
-
-/* =========================================
-   BUILT-IN EPISODE PLAYER
-========================================= */
-
-function openVideoPlayer(
-    source,
-    title
-) {
-
-
-    if (!source) {
-
-        return;
-
-    }
-
-
-    videoTitle.textContent =
-        title;
-
-
-    mainVideo.src =
-        source;
-
-
-    videoPlayer.classList.remove(
-        "hidden"
-    );
-
-
-    document.body.style.overflow =
-        "hidden";
-
-
-    mainVideo.play().catch(
-
-        error => {
-
-            console.log(
-                "Video waiting for play:",
-                error
-            );
-
-        }
-
-    );
-
-}
-
-
-
-/* =========================================
-   CLOSE VIDEO
-========================================= */
-
-function closeVideoPlayer() {
-
-
-    mainVideo.pause();
-
-
-    mainVideo.removeAttribute(
-        "src"
-    );
-
-
-    mainVideo.load();
-
-
-    videoPlayer.classList.add(
-        "hidden"
-    );
-
-
-    document.body.style.overflow =
-        "";
-
-}
-
-
-
-/* =========================================
-   DONATION BUTTON
-========================================= */
-
-function openDonationPage() {
-
-
-    if (
-        !SANDBOX_DATA.donation
-    ) {
-
-        alert(
-            "SUPPORT SYSTEM OFFLINE."
-        );
-
-        return;
-
-    }
-
-
-    if (
-        SANDBOX_DATA.donation.enabled
-        !== true
-    ) {
-
-        alert(
-            "SUPPORT SYSTEM CURRENTLY OFFLINE."
-        );
-
-        return;
-
-    }
-
-
-    const donationURL =
-
-        SANDBOX_DATA.donation.url;
-
-
-    /*
-        Until you and your parent add
-        the payment link, this message
-        appears instead.
-    */
-
-    if (!donationURL) {
-
-        alert(
-            "DONATION SYSTEM COMING SOON."
-        );
-
-        return;
-
-    }
-
-
-    window.open(
-
-        donationURL,
-
-        "_blank",
-
-        "noopener,noreferrer"
-
-    );
-
-}
-
-
-
-/* =========================================
-   NAVIGATION
-========================================= */
-
-function scrollToSection(
-    id
-) {
-
-
-    const section =
-
-        document.getElementById(
-            id
-        );
-
-
-    if (!section) {
-
-        return;
-
-    }
-
-
-    section.scrollIntoView({
-
-        behavior:
-            "smooth"
-
-    });
-
-}
-
-
-
-/* =========================================
-   GLITCH
-========================================= */
-
-function randomGlitch() {
-
-
-    const title =
-
-        document.querySelector(
-            ".glitch"
-        );
-
-
-    if (!title) {
-
-        return;
-
-    }
-
-
-    title.classList.add(
-        "glitch-active"
-    );
-
-
-    setTimeout(
-
-        () => {
-
-            title.classList.remove(
-                "glitch-active"
-            );
-
-        },
-
-        150
-
-    );
-
-}
-
-
-
-setInterval(
-
-    () => {
-
-
-        if (
-            Math.random() >
-            0.55
-        ) {
-
-            randomGlitch();
-
-        }
-
-
-    },
-
-    3000
-
-);
-
-
-
-/* =========================================
-   ESCAPE KEY
-========================================= */
-
-document.addEventListener(
-
-    "keydown",
-
-    event => {
-
-
-        if (
-            event.key === "Escape"
-        ) {
-
-            closeVideoPlayer();
-
-        }
-
-
-    }
-
-);
-
-
-
-/* =========================================
-   BOOT SEQUENCE
-========================================= */
-
-const bootMessages = [
-
-
-    "CONNECTING TO SANDBOX...",
-
-
-    "LOCATING SERVER...",
-
-
-    "SERVER FOUND.",
-
-
-    "VERIFYING USER...",
-
-
-    "READING ARCHIVE...",
-
-
-    "CORRUPTED FILES DETECTED.",
-
-
-    "UNKNOWN PROCESS DETECTED.",
-
-
-    "IGNORING WARNING...",
-
-
-    "CONNECTION ESTABLISHED."
-
-];
-
-
-let bootIndex =
-    0;
-
-
-
-function nextBootMessage() {
-
-
-    if (
-        bootIndex <
-        bootMessages.length
-    ) {
-
-
-        bootText.textContent =
-
-            bootMessages[
-                bootIndex
-            ];
-
-
-        bootIndex++;
-
-
-        setTimeout(
-
-            nextBootMessage,
-
-            380
-
-        );
-
+      localStorage.setItem(
+        STORAGE.credits,
+        String(state.credits)
+      );
 
     }
 
     else {
 
+      state.credits =
+        Math.max(
+          0,
+          Number(savedCredits) || 0
+        );
 
-        bootScreen.style.opacity =
-            "0";
+    }
 
 
-        setTimeout(
+    state.trailerRewards =
+      loadJSON(
+        STORAGE.trailerRewards,
+        {}
+      );
 
-            () => {
 
-                bootScreen.style.display =
-                    "none";
+    state.unlockedModels =
+      loadJSON(
+        STORAGE.unlockedModels,
+        {}
+      );
 
-            },
 
-            1000
+    state.easterEggs =
+      loadJSON(
+        STORAGE.easterEggs,
+        {}
+      );
+
+  }
+
+
+  // ==========================================
+  // CREDITS
+  // ==========================================
+
+  function updateCreditDisplay() {
+
+    const balance =
+      $("#credit-balance");
+
+    if (balance) {
+
+      balance.textContent =
+        state.credits;
+
+    }
+
+  }
+
+
+  function setCredits(amount) {
+
+    state.credits =
+      Math.max(
+        0,
+        Math.floor(
+          Number(amount) || 0
+        )
+      );
+
+
+    localStorage.setItem(
+      STORAGE.credits,
+      String(state.credits)
+    );
+
+
+    updateCreditDisplay();
+
+  }
+
+
+  function addCredits(
+    amount,
+    reason = ""
+  ) {
+
+    const value =
+      Math.max(
+        0,
+        Math.floor(
+          Number(amount) || 0
+        )
+      );
+
+
+    if (!value)
+      return;
+
+
+    setCredits(
+      state.credits + value
+    );
+
+
+    showToast(
+      `+${value} SC${
+        reason
+          ? " // " + reason
+          : ""
+      }`
+    );
+
+  }
+
+
+  function spendCredits(amount) {
+
+    const value =
+      Math.max(
+        0,
+        Math.floor(
+          Number(amount) || 0
+        )
+      );
+
+
+    if (
+      state.credits < value
+    ) {
+
+      showToast(
+        `INSUFFICIENT CREDITS // NEED ${value} SC`
+      );
+
+      return false;
+
+    }
+
+
+    setCredits(
+      state.credits - value
+    );
+
+
+    showToast(
+      `-${value} SC // FABRICATION FILE UNLOCKED`
+    );
+
+
+    return true;
+
+  }
+
+
+  // ==========================================
+  // NOTIFICATION
+  // ==========================================
+
+  let toastTimer;
+
+
+  function showToast(message) {
+
+    const toast =
+      $("#toast");
+
+
+    if (!toast)
+      return;
+
+
+    toast.textContent =
+      message;
+
+
+    toast.classList.remove(
+      "hidden"
+    );
+
+
+    clearTimeout(
+      toastTimer
+    );
+
+
+    toastTimer =
+      setTimeout(
+        () => {
+
+          toast.classList.add(
+            "hidden"
+          );
+
+        },
+
+        2600
+      );
+
+  }
+
+
+  // ==========================================
+  // SITE SETTINGS
+  // ==========================================
+
+  function applySiteSettings() {
+
+    $("#site-title").textContent =
+      SANDBOX_DATA.site.title;
+
+
+    $("#site-title").dataset.text =
+      SANDBOX_DATA.site.title;
+
+
+    $("#site-tagline").textContent =
+      SANDBOX_DATA.site.tagline;
+
+  }
+
+
+  // ==========================================
+  // IMAGE HANDLING
+  // ==========================================
+
+  function safeImage(
+    image,
+    alt
+  ) {
+
+    const img =
+      document.createElement(
+        "img"
+      );
+
+
+    img.alt = alt;
+
+    img.loading = "lazy";
+
+
+    if (!image) {
+
+      img.classList.add(
+        "missing-image"
+      );
+
+      return img;
+
+    }
+
+
+    img.src = image;
+
+
+    img.onerror = () => {
+
+      img.classList.add(
+        "missing-image"
+      );
+
+      img.removeAttribute(
+        "src"
+      );
+
+      img.alt =
+        `${alt} image coming soon`;
+
+    };
+
+
+    return img;
+
+  }
+
+
+  // ==========================================
+  // EPISODES
+  // ==========================================
+
+  function buildEpisodes() {
+
+    const container =
+      $("#episode-container");
+
+
+    if (!container)
+      return;
+
+
+    container.innerHTML =
+      "";
+
+
+    SANDBOX_DATA.episodes.forEach(
+      (episode) => {
+
+        const card =
+          document.createElement(
+            "article"
+          );
+
+
+        card.className =
+          "card media-card";
+
+
+        const imageWrap =
+          document.createElement(
+            "div"
+          );
+
+
+        imageWrap.className =
+          "image-wrap";
+
+
+        imageWrap.appendChild(
+
+          safeImage(
+            episode.thumbnail,
+            episode.title
+          )
 
         );
 
 
+        if (!episode.released) {
+
+          const locked =
+            document.createElement(
+              "div"
+            );
+
+
+          locked.className =
+            "locked-overlay";
+
+
+          locked.textContent =
+            "FILE LOCKED";
+
+
+          imageWrap.appendChild(
+            locked
+          );
+
+        }
+
+
+        const body =
+          document.createElement(
+            "div"
+          );
+
+
+        body.className =
+          "card-body";
+
+
+        body.innerHTML = `
+
+          <span class="card-code">
+            EP-${String(
+              episode.number
+            ).padStart(2, "0")}
+          </span>
+
+          <h3>
+            ${episode.title}
+          </h3>
+
+          <p>
+            ${episode.description}
+          </p>
+
+        `;
+
+
+        const button =
+          document.createElement(
+            "button"
+          );
+
+
+        button.className =
+          "secondary-button";
+
+
+        if (
+          episode.released &&
+          episode.video
+        ) {
+
+          button.textContent =
+            "WATCH EPISODE";
+
+
+          button.addEventListener(
+            "click",
+            () => {
+
+              openMedia(
+                episode.title,
+                episode.video
+              );
+
+            }
+          );
+
+        }
+
+        else {
+
+          button.textContent =
+            "COMING SOON";
+
+          button.disabled =
+            true;
+
+        }
+
+
+        body.appendChild(
+          button
+        );
+
+
+        card.append(
+          imageWrap,
+          body
+        );
+
+
+        container.appendChild(
+          card
+        );
+
+      }
+    );
+
+  }
+
+
+  // ==========================================
+  // TRAILERS
+  // ==========================================
+
+  function buildTrailers() {
+
+    const container =
+      $("#trailer-container");
+
+
+    if (!container)
+      return;
+
+
+    container.innerHTML =
+      "";
+
+
+    SANDBOX_DATA.episodes.forEach(
+      (episode) => {
+
+        const rewardKey =
+          `episode-${episode.number}`;
+
+
+        const rewardClaimed =
+          !!state.trailerRewards[
+            rewardKey
+          ];
+
+
+        const reward =
+          Number(
+            episode.trailerReward || 10
+          );
+
+
+        const card =
+          document.createElement(
+            "article"
+          );
+
+
+        card.className =
+          "card media-card";
+
+
+        const imageWrap =
+          document.createElement(
+            "div"
+          );
+
+
+        imageWrap.className =
+          "image-wrap";
+
+
+        imageWrap.appendChild(
+
+          safeImage(
+
+            episode.trailerThumbnail ||
+            episode.thumbnail,
+
+            `${episode.title} trailer`
+
+          )
+
+        );
+
+
+        if (
+          !episode.trailerReleased
+        ) {
+
+          const locked =
+            document.createElement(
+              "div"
+            );
+
+
+          locked.className =
+            "locked-overlay";
+
+
+          locked.textContent =
+            "TRAILER LOCKED";
+
+
+          imageWrap.appendChild(
+            locked
+          );
+
+        }
+
+
+        const body =
+          document.createElement(
+            "div"
+          );
+
+
+        body.className =
+          "card-body";
+
+
+        const rewardText =
+          rewardClaimed
+
+            ? "REWARD CLAIMED"
+
+            : `FIRST VIEW +${reward} SC`;
+
+
+        body.innerHTML = `
+
+          <span class="card-code">
+            ${rewardText}
+          </span>
+
+          <h3>
+            ${episode.title} Trailer
+          </h3>
+
+          <p>
+            Recovered promotional media
+            from the Sandbox archive.
+          </p>
+
+        `;
+
+
+        const button =
+          document.createElement(
+            "button"
+          );
+
+
+        button.className =
+          "secondary-button";
+
+
+        if (
+          episode.trailerReleased &&
+          episode.trailer
+        ) {
+
+          button.textContent =
+            "WATCH TRAILER";
+
+
+          button.addEventListener(
+            "click",
+            () => {
+
+              if (
+                !state.trailerRewards[
+                  rewardKey
+                ]
+              ) {
+
+                state.trailerRewards[
+                  rewardKey
+                ] = true;
+
+
+                saveJSON(
+                  STORAGE.trailerRewards,
+                  state.trailerRewards
+                );
+
+
+                addCredits(
+                  reward,
+                  "TRAILER REWARD"
+                );
+
+
+                buildTrailers();
+
+              }
+
+
+              openMedia(
+                `${episode.title} Trailer`,
+                episode.trailer
+              );
+
+            }
+          );
+
+        }
+
+        else {
+
+          button.textContent =
+            "COMING SOON";
+
+          button.disabled =
+            true;
+
+        }
+
+
+        body.appendChild(
+          button
+        );
+
+
+        card.append(
+          imageWrap,
+          body
+        );
+
+
+        container.appendChild(
+          card
+        );
+
+      }
+    );
+
+  }
+
+
+  // ==========================================
+  // CHARACTERS
+  // ==========================================
+
+  function buildCharacters() {
+
+    const container =
+      $("#character-container");
+
+
+    if (!container)
+      return;
+
+
+    container.innerHTML =
+      "";
+
+
+    SANDBOX_DATA.characters.forEach(
+      (character) => {
+
+        const card =
+          document.createElement(
+            "article"
+          );
+
+
+        card.className =
+          `card character-card${
+            character.classified
+              ? " classified"
+              : ""
+          }`;
+
+
+        const imageWrap =
+          document.createElement(
+            "div"
+          );
+
+
+        imageWrap.className =
+          "image-wrap";
+
+
+        imageWrap.appendChild(
+
+          safeImage(
+            character.image,
+            character.name
+          )
+
+        );
+
+
+        if (
+          character.classified
+        ) {
+
+          const ribbon =
+            document.createElement(
+              "div"
+            );
+
+
+          ribbon.className =
+            "classified-ribbon";
+
+
+          ribbon.textContent =
+            "CLASSIFIED";
+
+
+          imageWrap.appendChild(
+            ribbon
+          );
+
+        }
+
+
+        const body =
+          document.createElement(
+            "div"
+          );
+
+
+        body.className =
+          "card-body";
+
+
+        body.innerHTML = `
+
+          <span class="card-code">
+
+            ${
+              character.classified
+                ? "ACCESS RESTRICTED"
+                : "SUBJECT FILE"
+            }
+
+          </span>
+
+          <h3>
+            ${character.name}
+          </h3>
+
+          <p>
+            ${character.description}
+          </p>
+
+        `;
+
+
+        card.append(
+          imageWrap,
+          body
+        );
+
+
+        container.appendChild(
+          card
+        );
+
+      }
+    );
+
+  }
+
+
+  // ==========================================
+  // 3D MODELS / FABRICATION
+  // ==========================================
+
+  function buildModels() {
+
+    const container =
+      $("#model-container");
+
+
+    if (!container)
+      return;
+
+
+    container.innerHTML =
+      "";
+
+
+    SANDBOX_DATA.models.forEach(
+      (model) => {
+
+        const unlocked =
+          !!state.unlockedModels[
+            model.id
+          ];
+
+
+        const card =
+          document.createElement(
+            "article"
+          );
+
+
+        card.className =
+          "card model-card";
+
+
+        const imageWrap =
+          document.createElement(
+            "div"
+          );
+
+
+        imageWrap.className =
+          "image-wrap";
+
+
+        imageWrap.appendChild(
+
+          safeImage(
+            model.image,
+            model.name
+          )
+
+        );
+
+
+        // COMING SOON
+        if (!model.released) {
+
+          const overlay =
+            document.createElement(
+              "div"
+            );
+
+
+          overlay.className =
+            "locked-overlay";
+
+
+          if (
+            model.id ===
+            "reflight-model"
+          ) {
+
+            overlay.textContent =
+              "CLASSIFIED";
+
+          }
+
+          else {
+
+            overlay.textContent =
+              "COMING SOON";
+
+          }
+
+
+          imageWrap.appendChild(
+            overlay
+          );
+
+        }
+
+
+        const body =
+          document.createElement(
+            "div"
+          );
+
+
+        body.className =
+          "card-body";
+
+
+        let status;
+
+
+        if (!model.released) {
+
+          status =
+            model.id ===
+            "reflight-model"
+
+              ? "CLASSIFIED"
+
+              : "COMING SOON";
+
+        }
+
+        else if (unlocked) {
+
+          status =
+            "UNLOCKED";
+
+        }
+
+        else {
+
+          status =
+            `${model.cost} SC`;
+
+        }
+
+
+        body.innerHTML = `
+
+          <span class="card-code">
+            STATUS: ${status}
+          </span>
+
+          <h3>
+            ${model.name}
+          </h3>
+
+          <p>
+            ${model.description}
+          </p>
+
+        `;
+
+
+        const button =
+          document.createElement(
+            "button"
+          );
+
+
+        button.className =
+          "secondary-button";
+
+
+        // NOT RELEASED
+        if (!model.released) {
+
+          if (
+            model.id ===
+            "reflight-model"
+          ) {
+
+            button.textContent =
+              "ACCESS DENIED";
+
+          }
+
+          else {
+
+            button.textContent =
+              "COMING SOON";
+
+          }
+
+
+          button.disabled =
+            true;
+
+        }
+
+
+        // ALREADY UNLOCKED
+        else if (unlocked) {
+
+          button.textContent =
+            "DOWNLOAD .3MF";
+
+
+          button.addEventListener(
+            "click",
+            () => {
+
+              downloadModel(
+                model
+              );
+
+            }
+          );
+
+        }
+
+
+        // AVAILABLE TO UNLOCK
+        else {
+
+          button.textContent =
+            `UNLOCK // ${model.cost} SC`;
+
+
+          button.addEventListener(
+            "click",
+            () => {
+
+              unlockModel(
+                model
+              );
+
+            }
+          );
+
+        }
+
+
+        body.appendChild(
+          button
+        );
+
+
+        card.append(
+          imageWrap,
+          body
+        );
+
+
+        container.appendChild(
+          card
+        );
+
+      }
+    );
+
+  }
+
+
+  function unlockModel(model) {
+
+    if (
+      !model.released ||
+      !model.file
+    ) {
+
+      showToast(
+        "MODEL COMING SOON"
+      );
+
+      return;
+
     }
 
-}
+
+    if (
+      state.unlockedModels[
+        model.id
+      ]
+    ) {
+
+      buildModels();
+
+      return;
+
+    }
 
 
+    if (
+      !spendCredits(
+        model.cost
+      )
+    ) {
 
-/* =========================================
-   START WEBSITE
-========================================= */
+      return;
 
-buildEpisodes();
-
-
-buildTrailers();
-
-
-buildCharacters();
+    }
 
 
-setTimeout(
+    state.unlockedModels[
+      model.id
+    ] = true;
 
-    nextBootMessage,
 
-    500
+    saveJSON(
+      STORAGE.unlockedModels,
+      state.unlockedModels
+    );
 
-);
+
+    buildModels();
+
+  }
+
+
+  function downloadModel(model) {
+
+    if (
+      !model.file
+    ) {
+
+      showToast(
+        "MODEL COMING SOON"
+      );
+
+      return;
+
+    }
+
+
+    const a =
+      document.createElement(
+        "a"
+      );
+
+
+    a.href =
+      model.file;
+
+
+    a.download =
+      "";
+
+
+    document.body.appendChild(
+      a
+    );
+
+
+    a.click();
+
+
+    a.remove();
+
+  }
+
+
+  // ==========================================
+  // YOUTUBE SUPPORT
+  // ==========================================
+
+  function youtubeEmbedURL(url) {
+
+    try {
+
+      const parsed =
+        new URL(url);
+
+
+      if (
+        parsed.hostname.includes(
+          "youtu.be"
+        )
+      ) {
+
+        const id =
+          parsed.pathname.replace(
+            "/",
+            ""
+          );
+
+
+        return id
+
+          ? `https://www.youtube.com/embed/${id}?autoplay=1`
+
+          : null;
+
+      }
+
+
+      if (
+        parsed.hostname.includes(
+          "youtube.com"
+        )
+      ) {
+
+        const id =
+          parsed.searchParams.get(
+            "v"
+          );
+
+
+        return id
+
+          ? `https://www.youtube.com/embed/${id}?autoplay=1`
+
+          : null;
+
+      }
+
+    }
+
+    catch {
+
+      return null;
+
+    }
+
+
+    return null;
+
+  }
+
+
+  // ==========================================
+  // VIDEO PLAYER
+  // ==========================================
+
+  function openMedia(
+    title,
+    url
+  ) {
+
+    const modal =
+      $("#video-player");
+
+
+    const titleEl =
+      $("#video-title");
+
+
+    const video =
+      $("#main-video");
+
+
+    const iframe =
+      $("#youtube-player");
+
+
+    titleEl.textContent =
+      title;
+
+
+    const youtube =
+      youtubeEmbedURL(url);
+
+
+    if (youtube) {
+
+      video.pause();
+
+      video.removeAttribute(
+        "src"
+      );
+
+      video.load();
+
+      video.classList.add(
+        "hidden"
+      );
+
+
+      iframe.src =
+        youtube;
+
+
+      iframe.classList.remove(
+        "hidden"
+      );
+
+    }
+
+    else {
+
+      iframe.src =
+        "";
+
+
+      iframe.classList.add(
+        "hidden"
+      );
+
+
+      video.src =
+        url;
+
+
+      video.classList.remove(
+        "hidden"
+      );
+
+
+      video.play().catch(
+        () => {}
+      );
+
+    }
+
+
+    modal.classList.remove(
+      "hidden"
+    );
+
+
+    document.body.classList.add(
+      "modal-open"
+    );
+
+  }
+
+
+  function closeMedia() {
+
+    const modal =
+      $("#video-player");
+
+
+    const video =
+      $("#main-video");
+
+
+    const iframe =
+      $("#youtube-player");
+
+
+    video.pause();
+
+
+    video.removeAttribute(
+      "src"
+    );
+
+
+    video.load();
+
+
+    iframe.src =
+      "";
+
+
+    modal.classList.add(
+      "hidden"
+    );
+
+
+    document.body.classList.remove(
+      "modal-open"
+    );
+
+  }
+
+
+  // ==========================================
+  // SUPPORT BUTTON
+  // ==========================================
+
+  function setupSupport() {
+
+    const button =
+      $("#donate-button");
+
+
+    if (!button)
+      return;
+
+
+    button.addEventListener(
+      "click",
+      () => {
+
+        const donation =
+          SANDBOX_DATA.donation;
+
+
+        if (
+          !donation.enabled ||
+          !donation.url
+        ) {
+
+          showToast(
+            "SUPPORT SYSTEM COMING SOON"
+          );
+
+          return;
+
+        }
+
+
+        window.open(
+          donation.url,
+          "_blank",
+          "noopener,noreferrer"
+        );
+
+      }
+    );
+
+  }
+
+
+  // ==========================================
+  // TERMINAL
+  // ==========================================
+
+  function terminalPrint(text) {
+
+    const out =
+      $("#terminal-output");
+
+
+    out.innerHTML +=
+      `<div>${text}</div>`;
+
+
+    out.scrollTop =
+      out.scrollHeight;
+
+  }
+
+
+  function awardEgg(
+    id,
+    amount,
+    label
+  ) {
+
+    if (
+      state.easterEggs[id]
+    ) {
+
+      terminalPrint(
+        "REWARD ALREADY CLAIMED."
+      );
+
+      return;
+
+    }
+
+
+    state.easterEggs[id] =
+      true;
+
+
+    saveJSON(
+      STORAGE.easterEggs,
+      state.easterEggs
+    );
+
+
+    addCredits(
+      amount,
+      label
+    );
+
+
+    terminalPrint(
+      `REWARD AUTHORIZED: +${amount} SC`
+    );
+
+  }
+
+
+  function escapeHTML(text) {
+
+    const div =
+      document.createElement(
+        "div"
+      );
+
+
+    div.textContent =
+      text;
+
+
+    return div.innerHTML;
+
+  }
+
+
+  function runCommand(command) {
+
+    const cmd =
+      command
+        .trim()
+        .toLowerCase();
+
+
+    if (!cmd)
+      return;
+
+
+    terminalPrint(
+      `<span class="terminal-command">&gt; ${escapeHTML(command)}</span>`
+    );
+
+
+    switch (cmd) {
+
+      case "help":
+
+        terminalPrint(
+          "COMMANDS: help, subjects, emma, leo, frame, reflight, credits, fabrication, clear"
+        );
+
+        break;
+
+
+      case "subjects":
+
+        terminalPrint(
+          "SUBJECT FILES: EMMA // LEO // FRAME // ████████"
+        );
+
+        break;
+
+
+      case "emma":
+
+        terminalPrint(
+          "EMMA // STATUS: ACTIVE // ACCESS LEVEL: STANDARD"
+        );
+
+        break;
+
+
+      case "leo":
+
+        terminalPrint(
+          "LEO // STATUS: ACTIVE // KNOWLEDGE INDEX: ABNORMAL"
+        );
+
+        break;
+
+
+      case "frame":
+
+        terminalPrint(
+          "FRAME // ENTITY STATUS: MONITORING..."
+        );
+
+        break;
+
+
+      case "reflight":
+
+        terminalPrint(
+          "ACCESS DENIED."
+        );
+
+        terminalPrint(
+          "WARNING: UNKNOWN PROCESS RESPONDED TO QUERY."
+        );
+
+        break;
+
+
+      case "credits":
+
+        terminalPrint(
+          `CURRENT BALANCE: ${state.credits} SC`
+        );
+
+        break;
+
+
+      case "fabrication":
+
+        terminalPrint(
+          "FABRICATION NODE ONLINE."
+        );
+
+        break;
+
+
+      // SECRET EASTER EGG
+      case "coin":
+      case "coins":
+      case "free money":
+
+        terminalPrint(
+          "...YOU REALLY TRIED THAT?"
+        );
+
+
+        awardEgg(
+          "terminal_coin",
+          5,
+          "TERMINAL EASTER EGG"
+        );
+
+        break;
+
+
+      case "clear":
+
+        $("#terminal-output").innerHTML =
+          "SANDBOX ARCHIVE TERMINAL v1.4<br>";
+
+        break;
+
+
+      default:
+
+        terminalPrint(
+          `UNKNOWN COMMAND: ${escapeHTML(command)}`
+        );
+
+    }
+
+  }
+
+
+  function setupTerminal() {
+
+    const input =
+      $("#terminal-input");
+
+
+    if (!input)
+      return;
+
+
+    input.addEventListener(
+      "keydown",
+      (event) => {
+
+        if (
+          event.key !==
+          "Enter"
+        ) {
+
+          return;
+
+        }
+
+
+        const value =
+          input.value;
+
+
+        input.value =
+          "";
+
+
+        runCommand(
+          value
+        );
+
+      }
+    );
+
+  }
+
+
+  // ==========================================
+  // NAVIGATION
+  // ==========================================
+
+  function setupNavigation() {
+
+    document
+      .querySelectorAll(
+        'a[href^="#"]'
+      )
+      .forEach(
+        (link) => {
+
+          link.addEventListener(
+            "click",
+            (event) => {
+
+              const id =
+                link.getAttribute(
+                  "href"
+                );
+
+
+              const target =
+                document.querySelector(
+                  id
+                );
+
+
+              if (!target)
+                return;
+
+
+              event.preventDefault();
+
+
+              target.scrollIntoView({
+                behavior: "smooth"
+              });
+
+            }
+          );
+
+        }
+      );
+
+  }
+
+
+  // ==========================================
+  // BOOT SCREEN
+  // ==========================================
+
+  function bootSequence() {
+
+    const screen =
+      $("#boot-screen");
+
+
+    const text =
+      $("#boot-text");
+
+
+    const lines = [
+
+      "CONNECTING TO SANDBOX...",
+
+      "LOCATING SERVER...",
+
+      "SERVER FOUND.",
+
+      "VERIFYING USER...",
+
+      "READING ARCHIVE...",
+
+      "CREDIT SYSTEM DETECTED.",
+
+      "FABRICATION NODE ONLINE.",
+
+      "CORRUPTED FILES DETECTED.",
+
+      "UNKNOWN PROCESS DETECTED.",
+
+      "IGNORING WARNING...",
+
+      "CONNECTION ESTABLISHED."
+
+    ];
+
+
+    let i = 0;
+
+
+    function next() {
+
+      if (
+        i < lines.length
+      ) {
+
+        text.textContent +=
+          lines[i] + "\n";
+
+
+        i++;
+
+
+        setTimeout(
+          next,
+          110
+        );
+
+      }
+
+      else {
+
+        setTimeout(
+          () => {
+
+            screen.classList.add(
+              "boot-hidden"
+            );
+
+
+            setTimeout(
+              () => {
+
+                screen.style.display =
+                  "none";
+
+              },
+
+              600
+            );
+
+          },
+
+          350
+        );
+
+      }
+
+    }
+
+
+    next();
+
+  }
+
+
+  // ==========================================
+  // RANDOM GLITCH
+  // ==========================================
+
+  function randomGlitch() {
+
+    const title =
+      $("#site-title");
+
+
+    if (!title)
+      return;
+
+
+    setInterval(
+      () => {
+
+        title.classList.add(
+          "glitch-active"
+        );
+
+
+        setTimeout(
+          () => {
+
+            title.classList.remove(
+              "glitch-active"
+            );
+
+          },
+
+          140
+        );
+
+      },
+
+      6000
+    );
+
+  }
+
+
+  // ==========================================
+  // MODAL
+  // ==========================================
+
+  function setupModal() {
+
+    $("#close-video")
+      .addEventListener(
+        "click",
+        closeMedia
+      );
+
+
+    $("#video-player")
+      .addEventListener(
+        "click",
+        (event) => {
+
+          if (
+            event.target.id ===
+            "video-player"
+          ) {
+
+            closeMedia();
+
+          }
+
+        }
+      );
+
+
+    document.addEventListener(
+      "keydown",
+      (event) => {
+
+        if (
+          event.key ===
+          "Escape"
+        ) {
+
+          closeMedia();
+
+        }
+
+      }
+    );
+
+  }
+
+
+  // ==========================================
+  // START
+  // ==========================================
+
+  function init() {
+
+    loadState();
+
+    updateCreditDisplay();
+
+    applySiteSettings();
+
+    buildEpisodes();
+
+    buildTrailers();
+
+    buildCharacters();
+
+    buildModels();
+
+    setupSupport();
+
+    setupTerminal();
+
+    setupNavigation();
+
+    setupModal();
+
+    randomGlitch();
+
+    bootSequence();
+
+  }
+
+
+  document.addEventListener(
+    "DOMContentLoaded",
+    init
+  );
+
+})();
