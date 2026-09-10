@@ -2,63 +2,40 @@
 
   "use strict";
 
+  const STORAGE = {
+    credits: "sandbox_credits_v1",
+    trailerRewards: "sandbox_trailer_rewards_v1",
+    unlockedModels: "sandbox_unlocked_models_v1",
+    easterEggs: "sandbox_easter_eggs_v1",
+    donationRewards: "sandbox_donation_rewards_v1"
+  };
+
+  const $ = (selector) => document.querySelector(selector);
+
+  const state = {
+    credits: 0,
+    trailerRewards: {},
+    unlockedModels: {},
+    easterEggs: {},
+    donationRewards: {}
+  };
+
 
   // ==========================================
   // STORAGE
-  // ==========================================
-
-  const STORAGE = {
-
-    credits:
-      "sandbox_credits_v1",
-
-    trailerRewards:
-      "sandbox_trailer_rewards_v1",
-
-    unlockedModels:
-      "sandbox_unlocked_models_v1",
-
-    easterEggs:
-      "sandbox_easter_eggs_v1"
-
-  };
-
-
-  const $ = (selector) =>
-    document.querySelector(selector);
-
-
-  const state = {
-
-    credits: 0,
-
-    trailerRewards: {},
-
-    unlockedModels: {},
-
-    easterEggs: {}
-
-  };
-
-
-  // ==========================================
-  // SAVE / LOAD
   // ==========================================
 
   function loadJSON(key, fallback) {
 
     try {
 
-      const raw =
-        localStorage.getItem(key);
+      const raw = localStorage.getItem(key);
 
       return raw
         ? JSON.parse(raw)
         : fallback;
 
-    }
-
-    catch {
+    } catch {
 
       return fallback;
 
@@ -97,9 +74,7 @@
         String(state.credits)
       );
 
-    }
-
-    else {
+    } else {
 
       state.credits =
         Math.max(
@@ -127,6 +102,13 @@
     state.easterEggs =
       loadJSON(
         STORAGE.easterEggs,
+        {}
+      );
+
+
+    state.donationRewards =
+      loadJSON(
+        STORAGE.donationRewards,
         {}
       );
 
@@ -188,8 +170,7 @@
       );
 
 
-    if (!value)
-      return;
+    if (!value) return;
 
 
     setCredits(
@@ -198,11 +179,7 @@
 
 
     showToast(
-      `+${value} SC${
-        reason
-          ? " // " + reason
-          : ""
-      }`
+      `+${value} SC${reason ? " // " + reason : ""}`
     );
 
   }
@@ -238,7 +215,7 @@
 
 
     showToast(
-      `-${value} SC // FABRICATION FILE UNLOCKED`
+      `-${value} SC // FILE UNLOCKED`
     );
 
 
@@ -248,7 +225,71 @@
 
 
   // ==========================================
-  // NOTIFICATION
+  // DONATION CREDIT SYSTEM
+  // ==========================================
+
+  function donationCreditsFor(dollars) {
+
+    const amount =
+      Math.max(
+        0,
+        Number(dollars) || 0
+      );
+
+
+    return Math.floor(
+      amount * 10
+    );
+
+  }
+
+
+  function awardDonationCredits(
+    donationId,
+    dollars
+  ) {
+
+    if (
+      state.donationRewards[
+        donationId
+      ]
+    ) {
+
+      return;
+
+    }
+
+
+    const reward =
+      donationCreditsFor(
+        dollars
+      );
+
+
+    if (reward <= 0) return;
+
+
+    state.donationRewards[
+      donationId
+    ] = true;
+
+
+    saveJSON(
+      STORAGE.donationRewards,
+      state.donationRewards
+    );
+
+
+    addCredits(
+      reward,
+      "SUPPORTER BONUS"
+    );
+
+  }
+
+
+  // ==========================================
+  // TOAST
   // ==========================================
 
   let toastTimer;
@@ -260,8 +301,7 @@
       $("#toast");
 
 
-    if (!toast)
-      return;
+    if (!toast) return;
 
 
     toast.textContent =
@@ -379,8 +419,7 @@
       $("#episode-container");
 
 
-    if (!container)
-      return;
+    if (!container) return;
 
 
     container.innerHTML =
@@ -433,7 +472,7 @@
 
 
           locked.textContent =
-            "FILE LOCKED";
+            "COMING SOON";
 
 
           imageWrap.appendChild(
@@ -453,6 +492,14 @@
           "card-body";
 
 
+        const description =
+          episode.released
+
+            ? episode.description
+
+            : "Episode information has not been released yet.";
+
+
         body.innerHTML = `
 
           <span class="card-code">
@@ -466,7 +513,7 @@
           </h3>
 
           <p>
-            ${episode.description}
+            ${description}
           </p>
 
         `;
@@ -503,9 +550,7 @@
             }
           );
 
-        }
-
-        else {
+        } else {
 
           button.textContent =
             "COMING SOON";
@@ -547,8 +592,7 @@
       $("#trailer-container");
 
 
-    if (!container)
-      return;
+    if (!container) return;
 
 
     container.innerHTML =
@@ -594,15 +638,12 @@
           "image-wrap";
 
 
+        // ONLY USE THE TRAILER IMAGE
         imageWrap.appendChild(
 
           safeImage(
-
-            episode.trailerThumbnail ||
-            episode.thumbnail,
-
+            episode.trailerThumbnail,
             `${episode.title} trailer`
-
           )
 
         );
@@ -623,7 +664,7 @@
 
 
           locked.textContent =
-            "TRAILER LOCKED";
+            "TRAILER COMING SOON";
 
 
           imageWrap.appendChild(
@@ -648,7 +689,7 @@
 
             ? "REWARD CLAIMED"
 
-            : `FIRST VIEW +${reward} SC`;
+            : `WATCH REWARD +${reward} SC`;
 
 
         body.innerHTML = `
@@ -662,8 +703,7 @@
           </h3>
 
           <p>
-            Recovered promotional media
-            from the Sandbox archive.
+            OFFICIAL SANDBOX TRAILER
           </p>
 
         `;
@@ -728,9 +768,7 @@
             }
           );
 
-        }
-
-        else {
+        } else {
 
           button.textContent =
             "COMING SOON";
@@ -772,8 +810,7 @@
       $("#character-container");
 
 
-    if (!container)
-      return;
+    if (!container) return;
 
 
     container.innerHTML =
@@ -892,7 +929,7 @@
 
 
   // ==========================================
-  // 3D MODELS / FABRICATION
+  // FABRICATION
   // ==========================================
 
   function buildModels() {
@@ -901,8 +938,7 @@
       $("#model-container");
 
 
-    if (!container)
-      return;
+    if (!container) return;
 
 
     container.innerHTML =
@@ -948,7 +984,6 @@
         );
 
 
-        // COMING SOON
         if (!model.released) {
 
           const overlay =
@@ -961,22 +996,13 @@
             "locked-overlay";
 
 
-          if (
+          overlay.textContent =
             model.id ===
             "reflight-model"
-          ) {
 
-            overlay.textContent =
-              "CLASSIFIED";
+              ? "CLASSIFIED"
 
-          }
-
-          else {
-
-            overlay.textContent =
-              "COMING SOON";
-
-          }
+              : "COMING SOON";
 
 
           imageWrap.appendChild(
@@ -1009,16 +1035,12 @@
 
               : "COMING SOON";
 
-        }
-
-        else if (unlocked) {
+        } else if (unlocked) {
 
           status =
             "UNLOCKED";
 
-        }
-
-        else {
+        } else {
 
           status =
             `${model.cost} SC`;
@@ -1053,25 +1075,15 @@
           "secondary-button";
 
 
-        // NOT RELEASED
         if (!model.released) {
 
-          if (
+          button.textContent =
             model.id ===
             "reflight-model"
-          ) {
 
-            button.textContent =
-              "ACCESS DENIED";
+              ? "ACCESS DENIED"
 
-          }
-
-          else {
-
-            button.textContent =
-              "COMING SOON";
-
-          }
+              : "COMING SOON";
 
 
           button.disabled =
@@ -1079,8 +1091,6 @@
 
         }
 
-
-        // ALREADY UNLOCKED
         else if (unlocked) {
 
           button.textContent =
@@ -1100,8 +1110,6 @@
 
         }
 
-
-        // AVAILABLE TO UNLOCK
         else {
 
           button.textContent =
@@ -1160,19 +1168,6 @@
 
 
     if (
-      state.unlockedModels[
-        model.id
-      ]
-    ) {
-
-      buildModels();
-
-      return;
-
-    }
-
-
-    if (
       !spendCredits(
         model.cost
       )
@@ -1201,9 +1196,7 @@
 
   function downloadModel(model) {
 
-    if (
-      !model.file
-    ) {
+    if (!model.file) {
 
       showToast(
         "MODEL COMING SOON"
@@ -1235,14 +1228,13 @@
 
     a.click();
 
-
     a.remove();
 
   }
 
 
   // ==========================================
-  // YOUTUBE SUPPORT
+  // YOUTUBE
   // ==========================================
 
   function youtubeEmbedURL(url) {
@@ -1267,9 +1259,7 @@
 
 
         return id
-
           ? `https://www.youtube.com/embed/${id}?autoplay=1`
-
           : null;
 
       }
@@ -1288,16 +1278,12 @@
 
 
         return id
-
           ? `https://www.youtube.com/embed/${id}?autoplay=1`
-
           : null;
 
       }
 
-    }
-
-    catch {
+    } catch {
 
       return null;
 
@@ -1310,7 +1296,7 @@
 
 
   // ==========================================
-  // VIDEO PLAYER
+  // MEDIA PLAYER
   // ==========================================
 
   function openMedia(
@@ -1321,14 +1307,11 @@
     const modal =
       $("#video-player");
 
-
     const titleEl =
       $("#video-title");
 
-
     const video =
       $("#main-video");
-
 
     const iframe =
       $("#youtube-player");
@@ -1360,18 +1343,14 @@
       iframe.src =
         youtube;
 
-
       iframe.classList.remove(
         "hidden"
       );
 
-    }
-
-    else {
+    } else {
 
       iframe.src =
         "";
-
 
       iframe.classList.add(
         "hidden"
@@ -1380,7 +1359,6 @@
 
       video.src =
         url;
-
 
       video.classList.remove(
         "hidden"
@@ -1411,10 +1389,8 @@
     const modal =
       $("#video-player");
 
-
     const video =
       $("#main-video");
-
 
     const iframe =
       $("#youtube-player");
@@ -1422,14 +1398,11 @@
 
     video.pause();
 
-
     video.removeAttribute(
       "src"
     );
 
-
     video.load();
-
 
     iframe.src =
       "";
@@ -1448,7 +1421,7 @@
 
 
   // ==========================================
-  // SUPPORT BUTTON
+  // SUPPORT
   // ==========================================
 
   function setupSupport() {
@@ -1457,8 +1430,7 @@
       $("#donate-button");
 
 
-    if (!button)
-      return;
+    if (!button) return;
 
 
     button.addEventListener(
@@ -1582,8 +1554,7 @@
         .toLowerCase();
 
 
-    if (!cmd)
-      return;
+    if (!cmd) return;
 
 
     terminalPrint(
@@ -1614,7 +1585,7 @@
       case "emma":
 
         terminalPrint(
-          "EMMA // STATUS: ACTIVE // ACCESS LEVEL: STANDARD"
+          "EMMA // STATUS: ACTIVE"
         );
 
         break;
@@ -1623,7 +1594,7 @@
       case "leo":
 
         terminalPrint(
-          "LEO // STATUS: ACTIVE // KNOWLEDGE INDEX: ABNORMAL"
+          "LEO // STATUS: ACTIVE"
         );
 
         break;
@@ -1645,7 +1616,7 @@
         );
 
         terminalPrint(
-          "WARNING: UNKNOWN PROCESS RESPONDED TO QUERY."
+          "WARNING: UNKNOWN PROCESS RESPONDED."
         );
 
         break;
@@ -1669,7 +1640,7 @@
         break;
 
 
-      // SECRET EASTER EGG
+      // OLD SECRET
       case "coin":
       case "coins":
       case "free money":
@@ -1688,10 +1659,31 @@
         break;
 
 
+      // BIG SECRET
+      case "455":
+
+        terminalPrint(
+          "ADMIN CREDIT SEQUENCE DETECTED."
+        );
+
+        terminalPrint(
+          "AUTHORIZATION CODE ACCEPTED."
+        );
+
+
+        awardEgg(
+          "secret_455",
+          500,
+          "HIDDEN 455 CODE"
+        );
+
+        break;
+
+
       case "clear":
 
         $("#terminal-output").innerHTML =
-          "SANDBOX ARCHIVE TERMINAL v1.4<br>";
+          "SANDBOX ARCHIVE TERMINAL v1.5<br>";
 
         break;
 
@@ -1713,8 +1705,7 @@
       $("#terminal-input");
 
 
-    if (!input)
-      return;
+    if (!input) return;
 
 
     input.addEventListener(
@@ -1750,7 +1741,7 @@
 
 
   // ==========================================
-  // NAVIGATION
+  // NAV
   // ==========================================
 
   function setupNavigation() {
@@ -1766,20 +1757,15 @@
             "click",
             (event) => {
 
-              const id =
-                link.getAttribute(
-                  "href"
-                );
-
-
               const target =
                 document.querySelector(
-                  id
+                  link.getAttribute(
+                    "href"
+                  )
                 );
 
 
-              if (!target)
-                return;
+              if (!target) return;
 
 
               event.preventDefault();
@@ -1799,14 +1785,13 @@
 
 
   // ==========================================
-  // BOOT SCREEN
+  // BOOT
   // ==========================================
 
   function bootSequence() {
 
     const screen =
       $("#boot-screen");
-
 
     const text =
       $("#boot-text");
@@ -1822,13 +1807,11 @@
 
       "VERIFYING USER...",
 
-      "READING ARCHIVE...",
-
-      "CREDIT SYSTEM DETECTED.",
+      "CREDIT SYSTEM ONLINE.",
 
       "FABRICATION NODE ONLINE.",
 
-      "CORRUPTED FILES DETECTED.",
+      "MEDIA ARCHIVE CONNECTED.",
 
       "UNKNOWN PROCESS DETECTED.",
 
@@ -1860,9 +1843,7 @@
           110
         );
 
-      }
-
-      else {
+      } else {
 
         setTimeout(
           () => {
@@ -1899,7 +1880,7 @@
 
 
   // ==========================================
-  // RANDOM GLITCH
+  // GLITCH
   // ==========================================
 
   function randomGlitch() {
@@ -1908,8 +1889,7 @@
       $("#site-title");
 
 
-    if (!title)
-      return;
+    if (!title) return;
 
 
     setInterval(
